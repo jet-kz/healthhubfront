@@ -1,6 +1,6 @@
 "use client"
 
-import { useState, useEffect, useRef, useCallback } from "react"
+import { useState, useEffect, useRef, useCallback, Suspense } from "react"
 import { useAuth } from "@/hooks/use-auth"
 import { useConversations, usePatientRecords, usePrescriptions, useLabResults } from "@/hooks/queries"
 import { useQueryClient } from "@tanstack/react-query"
@@ -122,7 +122,7 @@ function RecordCard({ record, isMine }: { record: SharedRecord; isMine: boolean 
     )
 }
 
-export default function ChatPage() {
+function ChatPageContent() {
     const { user } = useAuth()
     const queryClient = useQueryClient()
     const searchParams = useSearchParams()
@@ -192,7 +192,7 @@ export default function ChatPage() {
             }
         }
         inputRef.current?.focus()
-    }, [queryClient, scrollToBottom])
+    }, [queryClient, scrollToBottom, user?.id])
 
     const sendRaw = (message: string) => {
         if (!activeRoom || wsRef.current?.readyState !== WebSocket.OPEN || !user?.id) return
@@ -408,19 +408,19 @@ export default function ChatPage() {
     )
 
     // ─── Chat room ───
-    const ChatRoom = activeRoom && (
+    const ChatRoom = (
         <div className="flex flex-col h-full">
             <div className="flex items-center gap-3 px-4 py-3 border-b border-border bg-background/80 backdrop-blur-md sticky top-0 z-10">
                 <button onClick={() => setActiveRoom(null)} className="lg:hidden w-8 h-8 rounded-full bg-muted flex items-center justify-center">
                     <ArrowLeft01Icon className="w-4 h-4" />
                 </button>
                 <div className="w-10 h-10 rounded-full bg-primary/10 border border-primary/20 overflow-hidden flex items-center justify-center shrink-0">
-                    {activeRoom.other_user.avatar_url
+                    {activeRoom?.other_user.avatar_url
                         ? <img src={activeRoom.other_user.avatar_url} alt="" className="w-full h-full object-cover" />
-                        : <span className="text-primary font-bold text-sm">{getInitials(activeRoom.other_user.name)}</span>}
+                        : <span className="text-primary font-bold text-sm">{getInitials(activeRoom?.other_user.name)}</span>}
                 </div>
                 <div className="flex-1">
-                    <p className="font-bold text-sm text-foreground">{activeRoom.other_user.name}</p>
+                    <p className="font-bold text-sm text-foreground">{activeRoom?.other_user.name}</p>
                     <p className="text-xs text-muted-foreground capitalize flex items-center gap-1.5">
                         <span className={`w-1.5 h-1.5 rounded-full inline-block ${wsStatus === "connected" ? "bg-green-500" : "bg-muted-foreground"}`} />
                         {wsStatus === "connected" ? "Online" : wsStatus === "connecting" ? "Connecting…" : "Offline"}
@@ -514,5 +514,17 @@ export default function ChatPage() {
                 ) : ChatRoom}
             </div>
         </div>
+    )
+}
+
+export default function ChatPage() {
+    return (
+        <Suspense fallback={
+            <div className="flex items-center justify-center h-[60vh]">
+                <Loader2 className="w-8 h-8 animate-spin text-primary" />
+            </div>
+        }>
+            <ChatPageContent />
+        </Suspense>
     )
 }
