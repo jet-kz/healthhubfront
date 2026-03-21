@@ -350,8 +350,11 @@ export default function ChatPage() {
     // ─── Conversation list ───
     const ConversationList = (
         <div className="flex flex-col h-full">
-            <div className="px-4 pt-5 pb-3">
-                <h1 className="text-2xl font-bold tracking-tight text-foreground">Messages</h1>
+            <div className="px-4 pt-5 pb-3 border-b border-border/40">
+                <div className="flex items-center justify-between mb-0.5">
+                    <h1 className="text-xl font-bold tracking-tight text-foreground">Messages</h1>
+                    <div className="w-1.5 h-1.5 rounded-full bg-emerald-500 shadow-sm shadow-emerald-200" title="Active" />
+                </div>
                 <div className="relative mt-3">
                     <Search01Icon className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
                     <input value={search} onChange={e => setSearch(e.target.value)}
@@ -495,16 +498,18 @@ export default function ChatPage() {
     )
 
     return (
-        <div className="-mx-4 sm:-mx-6 -my-5 h-[calc(100vh-68px)] lg:h-[calc(100vh-56px)] flex overflow-hidden">
-            <div className={`w-full lg:w-[360px] lg:shrink-0 border-r border-border bg-background overflow-hidden flex flex-col ${activeRoom ? "hidden lg:flex" : "flex"}`}>
+        <div className="-mx-4 sm:-mx-6 -my-5 h-[calc(100vh-124px)] lg:h-[calc(100vh-112px)] flex overflow-hidden border-t border-border">
+            <div className={`w-full lg:w-[350px] lg:shrink-0 border-r border-border bg-background flex flex-col ${activeRoom ? "hidden lg:flex" : "flex"}`}>
                 {ConversationList}
             </div>
-            <div className={`flex-1 flex flex-col bg-background overflow-hidden ${activeRoom ? "flex" : "hidden lg:flex"}`}>
+            <div className={`flex-1 flex flex-col bg-slate-50/30 overflow-hidden ${activeRoom ? "flex" : "hidden lg:flex"}`}>
                 {!activeRoom ? (
                     <div className="flex-1 flex flex-col items-center justify-center text-center p-8">
-                        <BubbleChatIcon className="w-16 h-16 mb-4 opacity-20 text-muted-foreground" />
-                        <h3 className="text-lg font-bold text-foreground">Select a conversation</h3>
-                        <p className="text-sm text-muted-foreground mt-2 max-w-sm">Choose a chat to start messaging your doctor, lab, or pharmacy.</p>
+                        <div className="w-20 h-20 rounded-[32px] bg-primary/5 flex items-center justify-center mb-6">
+                            <BubbleChatIcon className="w-10 h-10 text-primary/30" />
+                        </div>
+                        <h3 className="text-xl font-bold text-foreground">Messages</h3>
+                        <p className="text-sm text-muted-foreground mt-2 max-w-[240px] mx-auto leading-relaxed">Choose a conversation to start chatting with your healthcare providers.</p>
                     </div>
                 ) : ChatRoom}
             </div>

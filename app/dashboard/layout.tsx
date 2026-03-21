@@ -12,6 +12,7 @@ import {
 } from "hugeicons-react"
 import { useAuth } from "@/hooks/use-auth"
 import { useProfile, useUnreadCount } from "@/hooks/queries"
+import { usePushNotifications } from "@/hooks/use-push-notifications"
 
 const patientNav = [
     { label: "Home", href: "/dashboard", icon: Home },
@@ -61,14 +62,15 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
         return pathname.startsWith(href)
     }
 
+    const { permission, requestPermission } = usePushNotifications()
+
     return (
         <div className="min-h-screen bg-background flex">
-
-            {/* ─── Desktop Sidebar ─── */}
+            {/* ... Desktop Sidebar ... */}
             <aside className="hidden lg:flex flex-col w-[240px] min-h-screen bg-card border-r border-border fixed left-0 top-0 z-30">
                 {/* Logo */}
                 <div className="flex items-center gap-2 px-5 h-16 shrink-0">
-                    <div className="w-8 h-8 bg-primary rounded-xl flex items-center justify-center">
+                    <div className="w-8 h-8 bg-sky-500 rounded-xl flex items-center justify-center shadow-lg shadow-sky-200">
                         <Heart className="w-4 h-4 text-white" fill="currentColor" />
                     </div>
                     <span className="font-bold text-base tracking-tight text-foreground">JetCare</span>
@@ -83,7 +85,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
                             className={`
                                 flex items-center gap-3 h-10 px-3 rounded-xl text-sm font-medium transition-all
                                 ${isActive(href)
-                                    ? "bg-primary text-white"
+                                    ? "bg-sky-500 text-white shadow-md shadow-sky-100"
                                     : "text-muted-foreground hover:bg-muted"
                                 }
                             `}
@@ -101,7 +103,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
                         className={`
                             flex items-center gap-3 h-10 px-3 rounded-xl text-sm font-medium transition-all
                             ${isActive(role === 'doctor' ? "/dashboard/doctor/profile" : role === 'lab' ? "/dashboard/lab/profile" : role === 'pharmacy' ? "/dashboard/pharmacy/profile" : "/dashboard/profile")
-                                ? "bg-primary text-white"
+                                ? "bg-sky-500 text-white shadow-md shadow-sky-100"
                                 : "text-muted-foreground hover:bg-muted hover:text-foreground"
                             }
                         `}
@@ -114,20 +116,20 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
                 {/* User card at bottom */}
                 <div className="p-3">
                     <div className="flex items-center gap-3 p-2.5 rounded-2xl hover:bg-muted transition-all group cursor-pointer">
-                        <div className="w-9 h-9 bg-primary rounded-full flex items-center justify-center shrink-0 overflow-hidden">
+                        <div className="w-9 h-9 bg-sky-100 rounded-full flex items-center justify-center shrink-0 overflow-hidden border border-sky-200">
                             {profile?.avatar_url ? (
                                 <img src={profile.avatar_url} alt="Avatar" className="w-full h-full object-cover" />
                             ) : (
-                                <span className="text-xs font-bold text-white">
+                                <span className="text-xs font-bold text-sky-600">
                                     {user?.name?.[0]?.toUpperCase() || user?.email?.[0]?.toUpperCase() || "U"}
                                 </span>
                             )}
                         </div>
                         <div className="flex-1 min-w-0">
-                            <p className="text-sm font-medium truncate text-foreground">
+                            <p className="text-sm font-bold truncate text-foreground leading-tight">
                                 {profile?.full_name || user?.name || user?.email || "User"}
                             </p>
-                            <p className="text-xs text-muted-foreground capitalize">{user?.role || "patient"}</p>
+                            <p className="text-[10px] text-muted-foreground font-bold uppercase tracking-wider">{user?.role || "patient"}</p>
                         </div>
                         <button
                             onClick={() => logout()}
@@ -144,28 +146,42 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
             <div className="flex-1 lg:ml-[240px] flex flex-col min-h-screen">
 
                 {/* Top header (mobile + desktop) */}
-                <header className="sticky top-0 z-20 bg-background/80 backdrop-blur-md h-14 flex items-center px-4 sm:px-6 gap-3">
+                <header className="sticky top-0 z-20 bg-background/80 backdrop-blur-md h-16 flex items-center px-4 sm:px-6 gap-3 border-b border-border/40">
                     
-                    {/* Desktop: page name breadcrumb */}
-                    <div className="hidden lg:flex items-center gap-1.5 text-sm text-muted-foreground flex-1">
+                    {/* Desktop: page info */}
+                    <div className="hidden lg:flex items-center gap-2.5 text-sm text-muted-foreground flex-1">
+                        <div className="w-1.5 h-1.5 rounded-full bg-sky-400" />
                         {navItems.find(n => isActive(n.href)) && (
-                            <span className="text-foreground font-medium">
+                            <span className="text-foreground font-bold text-base tracking-tight">
                                 {navItems.find(n => isActive(n.href))?.label}
                             </span>
                         )}
                         {!navItems.find(n => isActive(n.href)) && pathname.includes('settings') && (
-                            <span className="text-foreground font-medium">Settings</span>
+                            <span className="text-foreground font-bold text-base tracking-tight">Settings</span>
                         )}
                     </div>
 
-                    {/* Mobile: empty flex spacer */}
-                    <div className="flex lg:hidden flex-1" />
+                    {/* Mobile: Logo/Icon to balance the bell */}
+                    <div className="flex lg:hidden items-center gap-2 flex-1">
+                        <div className="w-8 h-8 bg-sky-500 rounded-xl flex items-center justify-center">
+                            <Heart className="w-4 h-4 text-white" fill="currentColor" />
+                        </div>
+                        <span className="font-bold text-[15px] tracking-tight text-foreground line-clamp-1">
+                            {navItems.find(n => isActive(n.href))?.label || "JetCare"}
+                        </span>
+                    </div>
 
-                    {/* Right side: notification bell only (both mobile & desktop) */}
-                    <div className="flex items-center gap-2">
-                        <button className="w-9 h-9 rounded-full bg-muted flex items-center justify-center text-muted-foreground hover:text-foreground hover:bg-muted/80 transition-all relative">
+                    {/* Right side: notification bell */}
+                    <div className="flex items-center gap-3">
+                        <button 
+                            onClick={requestPermission}
+                            className={`w-10 h-10 rounded-full flex items-center justify-center transition-all relative
+                            ${permission === 'granted' ? "bg-muted text-foreground" : "bg-sky-50 text-sky-600 hover:bg-sky-100 border border-sky-100 shadow-sm"}
+                        `}>
                             <Bell className="w-4 h-4" />
-                            <span className="absolute top-2 right-2 w-1.5 h-1.5 bg-destructive rounded-full" />
+                            {permission !== 'granted' && (
+                                <span className="absolute top-2.5 right-2.5 w-2 h-2 bg-destructive rounded-full border-2 border-white shadow-sm ring-2 ring-sky-50" />
+                            )}
                         </button>
                     </div>
                 </header>
