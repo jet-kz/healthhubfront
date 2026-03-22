@@ -158,7 +158,7 @@ const features = [
     icon: Zap,
   },
   {
-    title: "Smart Scheduling",
+    title: "Smart-Scheduling",
     description: "AI-powered, appointment management to minimize no-shows and optimize time.",
     icon: CheckCircle2,
   },
